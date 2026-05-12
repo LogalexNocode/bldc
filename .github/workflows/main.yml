@@ -1,0 +1,35 @@
+name: Compile doh38 E-bike VESC Firmware
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - '.github/workflows/*.yml'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v4
+
+    - name: Install System Dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y build-essential git wget libgl-dev libxcb-xinerama0
+
+    - name: Install ARM Toolchain SDK
+      run: make arm_sdk_install
+
+    - name: Compile Target 75_100 (Standard Flipsky)
+      run: make 75_100
+
+    - name: Compile Target 75_100_V2 (For Aluminum/V2 PCB)
+      run: make 75_100_V2 || true
+
+    - name: Upload Compiled Firmware Artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: flipsky_custom_firmware
+        path: build/*/*.bin
